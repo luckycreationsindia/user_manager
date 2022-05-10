@@ -36,14 +36,14 @@ const corsOptions = {
             callback(null, true);
             //callback(new Error())
         }
-    }
+    },
+    credentials: true
 }
 
 app.use(cors(corsOptions));
-
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 passportConfig(passport);
 let sess = session({
@@ -55,14 +55,36 @@ let sess = session({
     cookie: {secure: false, maxAge: new Date().getTime() + (60 * 60 * 24 * 1000 * 7)},
 });
 app.use(sess);
-
 app.use(passport.initialize());
 app.use(passport.session());
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const attemptBlockerService = require('./services/attempt_blocker');
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.get('/testFailure', (req, res) => {
+    let key = Buffer.from(req.socket.remoteAddress + ":luckycreationsindia@gmail.com").toString('base64');
+    attemptBlockerService.loadByKey(key, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.json({status: "Error", message: !(err instanceof Error) ? err : err.message});
+        } else {
+            if (result.secondsRemaining > 0) {
+                return res.json({status: "Error", message: result});
+            }
+            attemptBlockerService.add({key: key}, (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.json({status: "Error", message: !(err instanceof Error) ? err : err.message});
+                } else {
+                    return res.json({status: "Success", message: result});
+                }
+            });
+        }
+    });
+
+});
 
 module.exports = app;

@@ -30,6 +30,25 @@ exports.signin = (req, res, next) => {
     })(req, res, next);
 };
 
+exports.totpSignin = (req, res, next) => {
+    passport.authenticate('local-totp', function (err, user, info) {
+        if (err) {
+            return next(err);
+        }
+        if (info) {
+            return res.json(info);
+        }
+        // req / res held in closure
+        req.logIn(user, function (err) {
+            if (err) {
+                return next(err);
+            }
+            delete user.password;
+            return res.json({status: "Success", message: "Success"});
+        });
+    })(req, res, next);
+};
+
 exports.logout = (req, res, next) => {
     req.logout();
     req.session.destroy(()=>{

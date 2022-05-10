@@ -34,6 +34,7 @@ const UserSchema = new Schema({
         type: Number,
         default: 0
     },
+    totp_secret: String,
 }, {timestamps: true, collection: 'users'});
 
 UserSchema.virtual('id').get(function () {

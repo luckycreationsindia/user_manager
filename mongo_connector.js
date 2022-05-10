@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 async function getDatabase() {
-    await mongoose.connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
+    return mongoose.connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`, {
         useNewUrlParser: true,
         useUnifiedTopology: true
     });
