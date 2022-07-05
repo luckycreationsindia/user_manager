@@ -8,15 +8,12 @@ const passport = require('passport');
 const passportConfig = require('./passport_config');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
-dotenv.config({path: './config/config.env'});
-
-global.dbConfig = require("./config/db.config");
-const authConfig = require("./config/auth.config");
+dotenv.config()
 
 require('./mongo_connector')();
 const sessionStore = new MongoDBStore({
-    uri: `mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`,
-    databaseName: dbConfig.DB,
+    uri: `mongodb://${process.env['DB_HOST']}:${process.env['DB_PORT']}/${process.env['DB_NAME']}`,
+    databaseName: process.env['DB_NAME'],
     collection: 'sessions',
     connectionOptions: {
         useNewUrlParser: true,
@@ -48,7 +45,7 @@ app.use(cookieParser());
 passportConfig(passport);
 let sess = session({
     key: 'token',
-    secret: authConfig.secret,
+    secret: process.env['APP_SECRET'],
     store: sessionStore,
     name: 'token',
     touchAfter: 24 * 3600, resave: true, saveUninitialized: true, autoRemove: 'native',
@@ -84,7 +81,6 @@ app.get('/testFailure', (req, res) => {
             });
         }
     });
-
 });
 
 module.exports = app;
